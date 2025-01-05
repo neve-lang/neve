@@ -241,6 +241,9 @@ size_t disasmInstr(Chunk *ch, Val *regs, size_t offset) {
     case OP_LESS_EQ:
       return manyRegInstr("lte", ch, regs, offset, 3);
 
+    case OP_TABLE_NEW:
+      return regInstr("tablenew", ch, regs, offset);
+
     case OP_TABLE_SET:
       return manyRegInstr("tableset", ch, regs, offset, 3);
 
