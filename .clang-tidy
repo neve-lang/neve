@@ -1,0 +1,12 @@
+Checks: >
+  -*,                                  # Disable all checks
+  clang-analyzer-*,
+  bugprone-*,
+  performance-*,
+  readability-*,
+  misc-*,
+  portability-*,
+  -readability-identifier-length,
+  -bugprone-easily-swappable-parameters,
+  -misc-no-recursion
+WarningsAsErrors: '*'

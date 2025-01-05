@@ -1,6 +1,4 @@
 .git/
 build/
 
-.clang-tidy
-
 *.geada
