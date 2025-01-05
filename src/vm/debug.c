@@ -241,6 +241,12 @@ size_t disasmInstr(Chunk *ch, Val *regs, size_t offset) {
     case OP_LESS_EQ:
       return manyRegInstr("lte", ch, regs, offset, 3);
 
+    case OP_TABLE_SET:
+      return manyRegInstr("tableset", ch, regs, offset, 3);
+
+    case OP_TABLE_GET:
+      return manyRegInstr("tableget", ch, regs, offset, 3);
+
     default:
       printf("unknown instr %u\n", instr);
       return offset + 1;
