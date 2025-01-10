@@ -9,6 +9,7 @@ add_executable(neve
   src/err/render.c
   src/mem/mem.c
   src/runtime/val.c
+  src/runtime/table.c
   src/runtime/obj.c
   src/vm/debug.c
   src/vm/chunk.c

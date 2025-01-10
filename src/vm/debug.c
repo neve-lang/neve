@@ -127,10 +127,18 @@ static size_t manyRegInstr(
   return offset + regCount + 1;
 }
 
-static size_t byteInstr(const char *name, Chunk *ch, size_t offset) {
-  const uint8_t opOffset = ch->code[offset + 1]; 
+static size_t regByteInstr(
+  const char *name,
+  Chunk *ch,
+  Val *regs,
+  size_t offset
+) {
+  const uint8_t reg = ch->code[offset + 1];
+  const uint8_t byte = ch->code[offset + 2]; 
   
-  printf("%-8s %u\n", name, opOffset);
+  printReg(ch, regs, offset + 1);
+  printOffset(offset);
+  printf("%-8s r%u %u\n", name, reg, byte);
 
   return offset + 2;
 }
@@ -146,7 +154,7 @@ void disasmChunk(Chunk *ch, Val *regs, const char *name) {
 
 size_t disasmInstr(Chunk *ch, Val *regs, size_t offset) {
   IGNORE(simpleInstr);
-  IGNORE(byteInstr);
+  IGNORE(regByteInstr);
 
   const uint8_t instr = ch->code[offset];
 

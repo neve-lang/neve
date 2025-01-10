@@ -1,7 +1,6 @@
 #ifndef OBJ_H
 #define OBJ_H
 
-#include "common.h"
 #include "val.h"
 #include "vm.h"
 
@@ -10,8 +9,11 @@
 #define VAL_AS_STR(val)   ((ObjStr *)VAL_AS_OBJ(val))
 #define VAL_AS_CSTR(val)  (((ObjStr *)VAL_AS_OBJ(val))->chars)
 
+#define VAL_AS_TABLE(val) ((ObjTable *)VAL_AS_OBJ(val))
+
 typedef enum {
-  OBJ_STR
+  OBJ_STR,
+  OBJ_TABLE
 } ObjType;
 
 struct Obj {
@@ -26,6 +28,14 @@ struct ObjStr {
   bool ownsStr;
   uint32_t length;
   const char *chars;
+
+  uint32_t hash;
+};
+
+struct ObjTable {
+  Obj obj;
+
+  Table *table;
 };
 
 /*
@@ -37,12 +47,23 @@ static inline bool isObjType(Val val, ObjType type) {
 }
 */
 
-ObjStr *allocStr(NeveVM *vm, bool ownsStr, const char *chars, uint32_t length);
+ObjStr *allocStr(
+  NeveVM *vm,
+  bool ownsStr,
+  const char *chars,
+  uint32_t length,
+  uint32_t hash
+);
+
+ObjTable *allocTable(NeveVM *vm);
+
+uint32_t hashStr(const char *key, uint32_t length);
 
 void printObj(Val val);
 
 void freeObj(Obj *obj);
 
+uint32_t objStrLength(Obj *obj);
 uint32_t objAsStr(const char *buffer, Obj *obj);
 
 #endif

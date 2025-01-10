@@ -31,11 +31,15 @@ NeveVM newVM() {
     .objs = NULL
   };
 
+  initTable(&vm.strs);
+
   return vm;
 }
 
 void freeVM(NeveVM *vm) {
   freeObjs(vm->objs);
+  freeTable(&vm->strs);
+
   vm->objs = NULL;
 }
 
@@ -61,7 +65,9 @@ static void concat(NeveVM *vm) {
 
   chars[length] = '\0';
 
-  ObjStr *result = allocStr(vm, true, chars, length);
+  uint32_t hash = hashStr(chars, length);
+
+  ObjStr *result = allocStr(vm, true, chars, length, hash);
   vm->regs[regC] = OBJ_VAL(result);
 }
 
@@ -175,7 +181,10 @@ static Aftermath run(NeveVM *vm) {
 
         uint32_t finalSize = valAsStr(buffer, vm->regs[READ_BYTE()]);
 
-        vm->regs[READ_BYTE()] = OBJ_VAL(allocStr(vm, true, buffer, finalSize));
+        uint32_t hash = hashStr(buffer, finalSize);
+        vm->regs[READ_BYTE()] = OBJ_VAL(
+          allocStr(vm, true, buffer, finalSize, hash)
+        );
 
         break;
       }
@@ -259,6 +268,22 @@ static Aftermath run(NeveVM *vm) {
       case OP_LESS_EQ:
         BIN_OP(BOOL_VAL, <=);
         break;
+
+      case OP_TABLE_NEW: {
+        vm->regs[READ_BYTE()] = (
+          OBJ_VAL(allocTable(vm))
+        );
+
+        break;
+      }
+
+      case OP_TABLE_SET: {
+        ObjTable *table = VAL_AS_TABLE(vm->regs[READ_BYTE()]);
+        Val key = vm->regs[READ_BYTE()];
+
+        tableSet(table->table, key, vm->regs[READ_BYTE()]);
+        break;
+      }
 
       case OP_RET: {
         Val val = vm->regs[READ_BYTE()];

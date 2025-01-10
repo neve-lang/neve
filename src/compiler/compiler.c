@@ -79,7 +79,9 @@ static size_t readObj(
 
       newOffset += length;
 
-      ObjStr *str = allocStr(vm, false, chars, length);
+      uint32_t hash = hashStr(chars, length);
+
+      ObjStr *str = allocStr(vm, false, chars, length, hash);
       writeValArr(arr, OBJ_VAL(str));
 
       break;
