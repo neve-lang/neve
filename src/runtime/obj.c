@@ -107,7 +107,8 @@ void freeObj(Obj *obj) {
 uint32_t objStrLength(Obj *obj) {
   switch (obj->type) {
     case OBJ_STR:
-      return ((ObjStr *)obj)->length;
+      // +2: accommodate for the quotes around it
+      return ((ObjStr *)obj)->length + 2;
 
     case OBJ_TABLE:
       return tableStrLength(((ObjTable *)obj)->table);
@@ -124,9 +125,9 @@ uint32_t objAsStr(const char *buffer, const uint32_t size, Obj *obj) {
     case OBJ_STR: {
       ObjStr *str = (ObjStr *)obj;
 
-      strncpy((char *)buffer, str->chars, str->length);
+      sprintf((char *)buffer, "\"%.*s\"", str->length, str->chars);
 
-      return str->length;
+      return size;
     }
   }
 
