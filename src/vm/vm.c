@@ -31,7 +31,7 @@ NeveVM newVM() {
     .objs = NULL
   };
 
-  initTable(&vm.strs);
+  initTable(&vm.strs, 0);
 
   return vm;
 }
@@ -274,7 +274,7 @@ static Aftermath run(NeveVM *vm) {
 
       case OP_TABLE_NEW: {
         vm->regs[READ_BYTE()] = (
-          OBJ_VAL(newTable(vm))
+          OBJ_VAL(newTable(vm, 0))
         );
 
         break;

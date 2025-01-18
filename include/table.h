@@ -16,7 +16,7 @@ typedef struct {
   Entry *entries;
 } Table;
 
-void initTable(Table *table);
+void initTable(Table *table, uint32_t cap);
 
 bool tableSet(Table *table, Val key, Val val);
 Val tableGet(Table *table, Val key);

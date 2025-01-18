@@ -48,11 +48,11 @@ ObjStr *allocStr(
   return str;
 }
 
-ObjTable *newTable(NeveVM *vm) {
+ObjTable *newTable(NeveVM *vm, uint32_t cap) {
   ObjTable *obj = ALLOC_OBJ(vm, ObjTable, OBJ_TABLE);  
 
   obj->table = ALLOC(Table, 1);
-  initTable(obj->table);
+  initTable(obj->table, cap);
 
   return obj;
 }

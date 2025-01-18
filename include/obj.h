@@ -55,7 +55,7 @@ ObjStr *allocStr(
   uint32_t hash
 );
 
-ObjTable *newTable(NeveVM *vm);
+ObjTable *newTable(NeveVM *vm, uint32_t cap);
 
 uint32_t hashStr(const char *key, uint32_t length);
 

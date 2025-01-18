@@ -78,8 +78,8 @@ static void printEntryVal(Val val) {
   }
 }
 
-void initTable(Table *table) {
-  table->cap = 0;
+void initTable(Table *table, const uint32_t cap) {
+  table->cap = cap;
   table->next = 0;
   table->entries = NULL;
 }

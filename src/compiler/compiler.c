@@ -52,7 +52,21 @@ static size_t skipDebugHeader(const uint8_t *bytes, size_t offset) {
 
 static size_t readObj(
   NeveVM *vm,
-  ValArr *arr, 
+  Val *into,
+  size_t offset,
+  Bytecode *bytecode
+);
+
+static size_t readConst(
+  NeveVM *vm,
+  Val *into, 
+  size_t offset, 
+  Bytecode *bytecode
+);
+
+static size_t readObj(
+  NeveVM *vm,
+  Val *into, 
   size_t offset, 
   Bytecode *bytecode
 ) {
@@ -82,7 +96,42 @@ static size_t readObj(
       uint32_t hash = hashStr(chars, length);
 
       ObjStr *str = allocStr(vm, false, chars, length, hash);
-      writeValArr(arr, OBJ_VAL(str));
+      *into = OBJ_VAL(str);
+
+      break;
+    }
+
+    case OBJ_TABLE: {
+      uint32_t tableSize;
+      memcpy(&tableSize, bytes + newOffset, sizeof (uint32_t));
+
+      newOffset += sizeof (uint32_t);
+
+      ObjTable *obj = newTable(vm, tableSize);
+      Table *table = obj->table;
+
+      // TODO: determine whether we should keep things this way
+      // or avoid the overhead of tableSet(), even if this overhead
+      // only affects startup time.
+      for (uint32_t i = 0; i < tableSize; i++) {
+        Val key;
+        newOffset = readConst(vm, &key, newOffset, bytecode);
+
+        if (newOffset == UNEXPECTED_BYTE) {
+          return UNEXPECTED_BYTE; 
+        }
+
+        Val val;
+        newOffset = readConst(vm, &val, newOffset, bytecode);
+
+        if (newOffset == UNEXPECTED_BYTE) {
+          return UNEXPECTED_BYTE;
+        }
+
+        tableSet(table, key, val);
+      }
+
+      *into = OBJ_VAL(obj);
 
       break;
     }
@@ -96,7 +145,7 @@ static size_t readObj(
 
 static size_t readConst(
   NeveVM *vm,
-  ValArr *arr, 
+  Val *into, 
   size_t offset, 
   Bytecode *bytecode
 ) {
@@ -114,12 +163,12 @@ static size_t readConst(
 
       newOffset += sizeof (double);
 
-      writeValArr(arr, NUM_VAL(n));
+      *into = NUM_VAL(n);
       break;
     }
 
     case VAL_OBJ: {
-      newOffset = readObj(vm, arr, newOffset, bytecode);
+      newOffset = readObj(vm, into, newOffset, bytecode);
 
       if (newOffset == UNEXPECTED_BYTE) {
         return UNEXPECTED_BYTE;
@@ -156,10 +205,15 @@ static bool readConsts(
       return false;
     }
 
-    offset = readConst(vm, arr, offset, bytecode);
+    Val into;
+    offset = readConst(vm, &into, offset, bytecode);
+
     if (offset == UNEXPECTED_BYTE) {
       return false;
     }
+
+    writeValArr(arr, into);
+
   }
 
   *finalOffset = offset;
