@@ -151,77 +151,123 @@ void printTable(Table *table) {
 
   printf("[");
 
-  for (uint32_t i = 0; i < table->next; i++) {
+  bool isFirst = true;
+
+  for (uint32_t i = 0; i < table->cap; i++) {
     Entry *entry = &table->entries[i];
 
+    const bool isAtEnd = i == table->cap - 1;
+
     if (IS_VAL_EMPTY(entry->key)) {
-      if (i == table->next - 1) {
+      if (isAtEnd) {
         printf("]");
       }
 
       continue;
     }
 
+    if (!isFirst) {
+      printf(", ");
+    }
+
     printVal(entry->key);
     printf(": ");
     printVal(entry->val);
 
-    printf(i == table->next - 1 ? "]" : ", ");
+    if (isAtEnd) {
+      printf("]");
+    }
+
+    isFirst = false;
   }
 }
 
 uint32_t tableStrLength(Table *table) {
+  if (table->next == 0) {
+    // [:]
+    return 3;
+  }
+
   const uint32_t sepLength = 2;
 
-  uint32_t length = 0;
+  // 1 => initial '['
+  uint32_t length = 1;
 
-  for (uint32_t i = 0; i < table->next; i++) {
+  bool isFirst = true;
+
+  for (uint32_t i = 0; i < table->cap; i++) {
     Entry *entry = &table->entries[i];
 
+    const bool isAtEnd = i == table->cap - 1;
+
     if (IS_VAL_EMPTY(entry->key)) {
-      length += i == table->next - 1;
+      length += isAtEnd;
       continue;
+    }
+
+    if (!isFirst) {
+      length += sepLength;
     }
 
     length += valStrLength(entry->key);
     length += sepLength;
     length += valStrLength(entry->val);
 
-    length += i == table->next - 1 ? 1 : sepLength;
+    length += isAtEnd;
+
+    isFirst = false;
   }
 
   return length;
 }
 
-uint32_t tableAsStr(const char *buffer, Table *table) {
-  const uint32_t initialSize = 32;
-  const uint32_t newSize = tableStrLength(table);
+uint32_t tableAsStr(const char *buffer, const uint32_t size, Table *table) {
+  if (table->next == 0) {
+    const uint32_t length = 3;
 
-  buffer = GROW_ARR(char, (char *)buffer, initialSize, newSize);
+    strncpy((char *)buffer, "[:]", length);
+    return length;
+  }
 
-  uint32_t pos = 0;
+  const uint32_t newSize = size + 1;
 
-  for (uint32_t i = 0; i < table->next; i++) {
+  uint32_t pos = (uint32_t)snprintf((char *)buffer, newSize, "[");
+
+  bool isFirst = true;
+
+  for (uint32_t i = 0; i < table->cap; i++) {
     Entry *entry = &table->entries[i];
 
+    const bool isAtEnd = i == table->cap - 1;
+
     if (IS_VAL_EMPTY(entry->key)) {
-      if (i == table->next - 1) {
-        pos += (uint32_t)sprintf((char *)&buffer[pos], "]");
+      if (isAtEnd) {
+        pos += (uint32_t)snprintf((char *)&buffer[pos], newSize - pos, "]");
       }
       
       continue;
     }
 
-    pos += valAsStr((char *)&buffer[pos], entry->key);
-    pos += (uint32_t)sprintf((char *)&buffer[pos], ": ");
-    pos += valAsStr((char *)&buffer[pos], entry->val);
+    if (!isFirst) {
+      pos += (uint32_t)snprintf((char *)&buffer[pos], newSize - pos, ", ");
+    }
 
-    pos += (uint32_t)sprintf(
-      (char *)&buffer[pos], i == table->next - 1 ? "]" : ", "
-    );
+    const uint32_t keySize = valStrLength(entry->key);
+    const uint32_t valSize = valStrLength(entry->val);
+
+    pos += valAsStr((char *)&buffer[pos], keySize, entry->key);
+    pos += (uint32_t)snprintf((char *)&buffer[pos], newSize - pos, ": ");
+    pos += valAsStr((char *)&buffer[pos], valSize, entry->val);
+
+    if (isAtEnd) {
+      strncpy((char *)&buffer[pos], "]", newSize - pos);
+      pos++;
+    }
+
+    isFirst = false;
   }
 
-  return newSize;
+  return size;
 }
 
 void freeTable(Table *table) {

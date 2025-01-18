@@ -55,7 +55,7 @@ ObjStr *allocStr(
   uint32_t hash
 );
 
-ObjTable *allocTable(NeveVM *vm);
+ObjTable *newTable(NeveVM *vm);
 
 uint32_t hashStr(const char *key, uint32_t length);
 
@@ -64,6 +64,6 @@ void printObj(Val val);
 void freeObj(Obj *obj);
 
 uint32_t objStrLength(Obj *obj);
-uint32_t objAsStr(const char *buffer, Obj *obj);
+uint32_t objAsStr(const char *buffer, uint32_t size, Obj *obj);
 
 #endif

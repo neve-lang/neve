@@ -48,9 +48,10 @@ ObjStr *allocStr(
   return str;
 }
 
-ObjTable *allocTable(NeveVM *vm) {
+ObjTable *newTable(NeveVM *vm) {
   ObjTable *obj = ALLOC_OBJ(vm, ObjTable, OBJ_TABLE);  
 
+  obj->table = ALLOC(Table ,1);
   initTable(obj->table);
 
   return obj;
@@ -95,6 +96,7 @@ void freeObj(Obj *obj) {
       ObjTable *table = (ObjTable *)obj;
 
       freeTable(table->table);
+      FREE(Table, table->table);
       
       FREE(ObjTable, table);
       break;
@@ -114,18 +116,18 @@ uint32_t objStrLength(Obj *obj) {
   return 0;
 }
 
-uint32_t objAsStr(const char *buffer, Obj *obj) {
+uint32_t objAsStr(const char *buffer, const uint32_t size, Obj *obj) {
   switch (obj->type) {
     case OBJ_TABLE:
-      return tableAsStr(buffer, ((ObjTable *)obj)->table); 
+      return tableAsStr(buffer, size, ((ObjTable *)obj)->table); 
     
-    default:
-      // the Neve compiler shouldn't ever produce a show instruction for
-      // a value that already is a string, so we skip this case.  however,
-      // if a third-party compiler does this, then we're running into 
-      // undefined behavior.  but i think it's okay, as long as we 
-      // document it.
-      return 0;
+    case OBJ_STR: {
+      ObjStr *str = (ObjStr *)obj;
+
+      strncpy((char *)buffer, str->chars, str->length);
+
+      return str->length;
+    }
   }
 
   return 0;

@@ -60,6 +60,6 @@ uint32_t hashVal(Val val);
 bool valsEq(Val a, Val b);
 
 uint32_t valStrLength(Val val);
-uint32_t valAsStr(char *buffer, Val val);
+uint32_t valAsStr(char *buffer, uint32_t size, Val val);
 
 #endif

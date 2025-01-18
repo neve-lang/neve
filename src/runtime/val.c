@@ -141,10 +141,10 @@ uint32_t valStrLength(Val val) {
   return 0;
 }
 
-uint32_t valAsStr(char *buffer, Val val) {
+uint32_t valAsStr(char *buffer, const uint32_t size, Val val) {
   switch (val.type) {
     case VAL_OBJ:
-      return objAsStr(buffer, VAL_AS_OBJ(val));
+      return objAsStr(buffer, size, VAL_AS_OBJ(val));
 
     case VAL_NIL: {
       const uint32_t length = 3;

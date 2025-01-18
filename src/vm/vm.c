@@ -176,13 +176,16 @@ static Aftermath run(NeveVM *vm) {
         break;
 
       case OP_SHOW: {
-        const uint8_t size = 32;
-        char *buffer = ALLOC(char, size);
+        const uint8_t destReg = READ_BYTE();
+        const Val val = vm->regs[READ_BYTE()];
 
-        uint32_t finalSize = valAsStr(buffer, vm->regs[READ_BYTE()]);
+        const uint32_t size = valStrLength(val);
+        char *buffer = ALLOC(char, size + 1);
+
+        uint32_t finalSize = valAsStr(buffer, size, val);
 
         uint32_t hash = hashStr(buffer, finalSize);
-        vm->regs[READ_BYTE()] = OBJ_VAL(
+        vm->regs[destReg] = OBJ_VAL(
           allocStr(vm, true, buffer, finalSize, hash)
         );
 
@@ -271,7 +274,7 @@ static Aftermath run(NeveVM *vm) {
 
       case OP_TABLE_NEW: {
         vm->regs[READ_BYTE()] = (
-          OBJ_VAL(allocTable(vm))
+          OBJ_VAL(newTable(vm))
         );
 
         break;

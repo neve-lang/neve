@@ -32,7 +32,7 @@ ObjStr *tableFindStr(
 void printTable(Table *table);
 
 uint32_t tableStrLength(Table *table);
-uint32_t tableAsStr(const char *buffer, Table *table);
+uint32_t tableAsStr(const char *buffer, uint32_t size, Table *table);
 
 void freeTable(Table *table);
 
