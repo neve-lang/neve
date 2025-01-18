@@ -61,6 +61,23 @@ static void adjustCap(Table *table, uint32_t cap) {
   table->cap = cap;
 }
 
+static void printEntryVal(Val val) {
+  const bool isStr = (
+    IS_VAL_OBJ(val) && 
+    VAL_AS_OBJ(val)->type == OBJ_STR
+  );
+
+  if (isStr) {
+    putchar('"');
+  }
+
+  printVal(val);
+
+  if (isStr) {
+    putchar('"');
+  }
+}
+
 void initTable(Table *table) {
   table->cap = 0;
   table->next = 0;
@@ -170,9 +187,9 @@ void printTable(Table *table) {
       printf(", ");
     }
 
-    printVal(entry->key);
+    printEntryVal(entry->key);
     printf(": ");
-    printVal(entry->val);
+    printEntryVal(entry->val);
 
     if (isAtEnd) {
       printf("]");
