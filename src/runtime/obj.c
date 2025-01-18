@@ -51,7 +51,7 @@ ObjStr *allocStr(
 ObjTable *newTable(NeveVM *vm) {
   ObjTable *obj = ALLOC_OBJ(vm, ObjTable, OBJ_TABLE);  
 
-  obj->table = ALLOC(Table ,1);
+  obj->table = ALLOC(Table, 1);
   initTable(obj->table);
 
   return obj;
