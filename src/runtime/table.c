@@ -32,13 +32,19 @@ static Entry *findEntry(Entry *entries, uint32_t cap, Val key) {
   }
 }
 
-static void adjustCap(Table *table, uint32_t cap) {
+static Entry *allocEntries(uint32_t cap) {
   Entry *entries = ALLOC(Entry, cap);
 
   for (uint32_t i = 0; i < cap; i++) {
     entries[i].key = EMPTY_VAL;
     entries[i].val = NIL_VAL;
   }
+
+  return entries;
+}
+
+static void adjustCap(Table *table, uint32_t cap) {
+  Entry *entries = allocEntries(cap);
 
   table->next = 0;
   for (uint32_t i = 0; i < table->cap; i++) {
@@ -79,7 +85,17 @@ static void printEntryVal(Val val) {
 }
 
 void initTable(Table *table, const uint32_t cap) {
-  table->cap = cap;
+  if (cap > 0) {
+    const uint32_t newCap = cap < 8 ? 8 : cap;
+
+    table->cap = newCap;
+    table->next = 0;
+    table->entries = allocEntries(newCap);
+
+    return;
+  }
+
+  table->cap = 0;
   table->next = 0;
   table->entries = NULL;
 }

@@ -3,6 +3,7 @@
 (
   [ValType (1 byte)]
   (
+    [Bool value (1 byte)] |
     [Number value (double) (8 bytes)] |
     (
       [ObjType (1 byte)]
@@ -20,7 +21,7 @@
         )
       )
     )
-  )
+  )?
 )*
 [Header Separator (1 byte)]
 [Debug Header Length (2 bytes)]

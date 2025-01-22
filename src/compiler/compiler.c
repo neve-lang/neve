@@ -6,10 +6,6 @@
 #include "err.h"
 #include "obj.h"
 
-#ifdef DEBUG_COMPILE
-// #include "debug.h"
-#endif
-
 #define UNEXPECTED_BYTE 0
 
 static bool isBytecodeTruncated(Bytecode *bytecode) {
@@ -157,6 +153,24 @@ static size_t readConst(
   ValType type = (ValType)byte;
 
   switch (type) {
+    case VAL_BOOL: {
+      uint8_t b;
+      memcpy(&b, bytes + newOffset, sizeof (uint8_t));
+
+      newOffset += sizeof (uint8_t);
+
+      *into = BOOL_VAL(b);
+      break;
+    }
+
+    case VAL_NIL:
+      *into = NIL_VAL;
+      break;
+
+    case VAL_EMPTY:
+      *into = EMPTY_VAL;
+      break;
+
     case VAL_NUM: {
       double n;
       memcpy(&n, bytes + newOffset, sizeof (double));
