@@ -6,7 +6,7 @@ machine.  PRs are welcome!
 ## What's Next
 
 The next feature in the horizon for the Neve virtual machine is 
-**Tables (hash tables).**
+**UTF-16** or **UTF-32 strings**, as well as support for UTF-8 ones.
 
 However, any PR is welcome, whether it is related to the implementation of 
 the next feature or something completely different that benefits the project.
@@ -34,4 +34,4 @@ cmake ..
 cd .. && ./build.sh
 ```
 
-And the **neve** binary will be outputted to `build/neve`.
+And the **neve** binary will be output to `build/neve`.

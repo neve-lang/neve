@@ -57,14 +57,14 @@ void printVal(Val val) {
     case VAL_OBJ:
       printObj(val);
       break;
+
+    case VAL_EMPTY:
+      printf("()");
+      break;
   }
 }
 
 bool valsEq(Val a, Val b) {
-  if (a.type != b.type) {
-    return false;
-  }
-
   switch (a.type) {
     case VAL_NIL:
       return true;
@@ -75,24 +75,76 @@ bool valsEq(Val a, Val b) {
     case VAL_NUM:
       return VAL_AS_NUM(a) == VAL_AS_NUM(b);
 
-    case VAL_OBJ: {
-      ObjStr *aStr = VAL_AS_STR(a);
-      ObjStr *bStr = VAL_AS_STR(b);
+    case VAL_OBJ:
+      return VAL_AS_OBJ(a) == VAL_AS_OBJ(b);
 
-      return (
-        aStr->length == bStr->length &&
-        memcmp(aStr->chars, bStr->chars, aStr->length) == 0
-      );
-    }
+    case VAL_EMPTY:
+      return true;
   }
 
   return false;
 }
 
-uint32_t valAsStr(char *buffer, Val val) {
+static uint32_t hashDouble(double val) {
+  union BitCast {
+    double val;
+    uint32_t ints[2];
+  };
+
+  union BitCast cast;
+  cast.val = val + 1;
+
+  return cast.ints[0] + cast.ints[1];
+}
+
+// NOLINTBEGIN
+uint32_t hashVal(Val val) {
+  switch (val.type) {
+    case VAL_BOOL:
+      return VAL_AS_BOOL(val) ? 3 : 5;
+
+    case VAL_NIL:
+      return 7;
+  
+    case VAL_NUM:
+      return hashDouble(VAL_AS_NUM(val));
+
+    case VAL_OBJ:
+      return VAL_AS_STR(val)->hash;
+
+    case VAL_EMPTY:
+      return 0;
+  }
+
+  return 0;
+}
+// NOLINTEND
+
+uint32_t valStrLength(Val val) {
   switch (val.type) {
     case VAL_OBJ:
-      return objAsStr(buffer, VAL_AS_OBJ(val));
+      return objStrLength(VAL_AS_OBJ(val));
+
+    case VAL_NIL:
+      return 3;
+
+    case VAL_BOOL:
+      return 4 + !VAL_AS_BOOL(val);
+
+    case VAL_NUM:
+      return (uint32_t)snprintf(NULL, 0, "%.14g", VAL_AS_NUM(val));
+
+    case VAL_EMPTY:
+      return 2;
+  }
+
+  return 0;
+}
+
+uint32_t valAsStr(char *buffer, const uint32_t size, Val val) {
+  switch (val.type) {
+    case VAL_OBJ:
+      return objAsStr(buffer, size, VAL_AS_OBJ(val));
 
     case VAL_NIL: {
       const uint32_t length = 3;
@@ -127,6 +179,14 @@ uint32_t valAsStr(char *buffer, Val val) {
         "%.14g", 
         VAL_AS_NUM(val)
       ); 
+
+      return length;
+    }
+
+    case VAL_EMPTY: {
+      const uint32_t length = 2;
+
+      strncpy(buffer, "()", length); 
 
       return length;
     }

@@ -6,10 +6,6 @@
 #include "err.h"
 #include "obj.h"
 
-#ifdef DEBUG_COMPILE
-// #include "debug.h"
-#endif
-
 #define UNEXPECTED_BYTE 0
 
 static bool isBytecodeTruncated(Bytecode *bytecode) {
@@ -52,7 +48,21 @@ static size_t skipDebugHeader(const uint8_t *bytes, size_t offset) {
 
 static size_t readObj(
   NeveVM *vm,
-  ValArr *arr, 
+  Val *into,
+  size_t offset,
+  Bytecode *bytecode
+);
+
+static size_t readConst(
+  NeveVM *vm,
+  Val *into, 
+  size_t offset, 
+  Bytecode *bytecode
+);
+
+static size_t readObj(
+  NeveVM *vm,
+  Val *into, 
   size_t offset, 
   Bytecode *bytecode
 ) {
@@ -79,8 +89,45 @@ static size_t readObj(
 
       newOffset += length;
 
-      ObjStr *str = allocStr(vm, false, chars, length);
-      writeValArr(arr, OBJ_VAL(str));
+      uint32_t hash = hashStr(chars, length);
+
+      ObjStr *str = allocStr(vm, false, chars, length, hash);
+      *into = OBJ_VAL(str);
+
+      break;
+    }
+
+    case OBJ_TABLE: {
+      uint32_t tableSize;
+      memcpy(&tableSize, bytes + newOffset, sizeof (uint32_t));
+
+      newOffset += sizeof (uint32_t);
+
+      ObjTable *obj = newTable(vm, tableSize);
+      Table *table = obj->table;
+
+      // TODO: determine whether we should keep things this way
+      // or avoid the overhead of tableSet(), even if this overhead
+      // only affects startup time.
+      for (uint32_t i = 0; i < tableSize; i++) {
+        Val key;
+        newOffset = readConst(vm, &key, newOffset, bytecode);
+
+        if (newOffset == UNEXPECTED_BYTE) {
+          return UNEXPECTED_BYTE; 
+        }
+
+        Val val;
+        newOffset = readConst(vm, &val, newOffset, bytecode);
+
+        if (newOffset == UNEXPECTED_BYTE) {
+          return UNEXPECTED_BYTE;
+        }
+
+        tableSet(table, key, val);
+      }
+
+      *into = OBJ_VAL(obj);
 
       break;
     }
@@ -94,7 +141,7 @@ static size_t readObj(
 
 static size_t readConst(
   NeveVM *vm,
-  ValArr *arr, 
+  Val *into, 
   size_t offset, 
   Bytecode *bytecode
 ) {
@@ -106,18 +153,36 @@ static size_t readConst(
   ValType type = (ValType)byte;
 
   switch (type) {
+    case VAL_BOOL: {
+      uint8_t b;
+      memcpy(&b, bytes + newOffset, sizeof (uint8_t));
+
+      newOffset += sizeof (uint8_t);
+
+      *into = BOOL_VAL(b);
+      break;
+    }
+
+    case VAL_NIL:
+      *into = NIL_VAL;
+      break;
+
+    case VAL_EMPTY:
+      *into = EMPTY_VAL;
+      break;
+
     case VAL_NUM: {
       double n;
       memcpy(&n, bytes + newOffset, sizeof (double));
 
       newOffset += sizeof (double);
 
-      writeValArr(arr, NUM_VAL(n));
+      *into = NUM_VAL(n);
       break;
     }
 
     case VAL_OBJ: {
-      newOffset = readObj(vm, arr, newOffset, bytecode);
+      newOffset = readObj(vm, into, newOffset, bytecode);
 
       if (newOffset == UNEXPECTED_BYTE) {
         return UNEXPECTED_BYTE;
@@ -154,10 +219,15 @@ static bool readConsts(
       return false;
     }
 
-    offset = readConst(vm, arr, offset, bytecode);
+    Val into;
+    offset = readConst(vm, &into, offset, bytecode);
+
     if (offset == UNEXPECTED_BYTE) {
       return false;
     }
+
+    writeValArr(arr, into);
+
   }
 
   *finalOffset = offset;

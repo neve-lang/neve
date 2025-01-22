@@ -3,6 +3,7 @@
 
 #include "bytecode.h"
 #include "chunk.h"
+#include "table.h"
 #include "val.h"
 
 #define STACK_MAX 256
@@ -14,6 +15,7 @@ typedef struct {
   Val regs[STACK_MAX];
   Val *top;
 
+  Table strs;
   Obj *objs;
 } NeveVM;
 

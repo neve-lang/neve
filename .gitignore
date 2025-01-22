@@ -1,4 +1,6 @@
 .git/
 build/
 
+.clang-format
+
 *.geada
