@@ -24,6 +24,7 @@ static Obj *allocObj(NeveVM *vm, size_t size, ObjType type) {
 ObjStr *allocStr(
   NeveVM *vm,
   bool ownsStr,
+  bool isInterned,
   const char *chars,
   uint32_t length,
   uint32_t hash
@@ -43,7 +44,9 @@ ObjStr *allocStr(
   str->chars = chars;
   str->hash = hash;
 
-  tableSet(&vm->strs, OBJ_VAL(str), NIL_VAL);
+  if (isInterned) {
+    tableSet(&vm->strs, OBJ_VAL(str), NIL_VAL);
+  }
 
   return str;
 }
@@ -66,6 +69,24 @@ uint32_t hashStr(const char *key, uint32_t length) {
   }
 
   return hash;
+}
+
+bool objsEq(Obj *a, Obj *b) {
+  if (a == b) {
+    return true;
+  }
+
+  if (a->type != OBJ_STR || b->type != OBJ_STR) {
+    return false;
+  }
+
+  ObjStr *aStr = (ObjStr *)a;
+  ObjStr *bStr = (ObjStr *)b;
+
+  return (
+    aStr->length == bStr->length &&
+    memcmp(aStr->chars, bStr->chars, aStr->length) == 0
+  );
 }
 
 void printObj(Val val) {

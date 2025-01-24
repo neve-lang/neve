@@ -50,6 +50,7 @@ static inline bool isObjType(Val val, ObjType type) {
 ObjStr *allocStr(
   NeveVM *vm,
   bool ownsStr,
+  bool isInterned,
   const char *chars,
   uint32_t length,
   uint32_t hash
@@ -58,6 +59,8 @@ ObjStr *allocStr(
 ObjTable *newTable(NeveVM *vm, uint32_t cap);
 
 uint32_t hashStr(const char *key, uint32_t length);
+
+bool objsEq(Obj *a, Obj *b);
 
 void printObj(Val val);
 

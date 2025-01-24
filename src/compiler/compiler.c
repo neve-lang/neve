@@ -76,6 +76,7 @@ static size_t readObj(
   switch (type) {
     case OBJ_STR: {
       uint32_t length;
+
       memcpy(&length, bytes + newOffset, sizeof (uint32_t));
 
       newOffset += sizeof (uint32_t);
@@ -90,8 +91,10 @@ static size_t readObj(
       newOffset += length;
 
       uint32_t hash = hashStr(chars, length);
+      
+      const bool isInterned = bytes[newOffset++];
 
-      ObjStr *str = allocStr(vm, false, chars, length, hash);
+      ObjStr *str = allocStr(vm, false, isInterned, chars, length, hash);
       *into = OBJ_VAL(str);
 
       break;
