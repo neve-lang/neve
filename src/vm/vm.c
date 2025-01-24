@@ -67,7 +67,9 @@ static void concat(NeveVM *vm) {
 
   uint32_t hash = hashStr(chars, length);
 
-  ObjStr *result = allocStr(vm, true, chars, length, hash);
+  const bool isInterned = length <= MAX_INTERNED_STR_SIZE;
+
+  ObjStr *result = allocStr(vm, true, isInterned, chars, length, hash);
   vm->regs[regC] = OBJ_VAL(result);
 }
 
@@ -184,9 +186,11 @@ static Aftermath run(NeveVM *vm) {
 
         uint32_t finalSize = valAsStr(buffer, size, val);
 
+        const bool isInterned = finalSize <= MAX_INTERNED_STR_SIZE;
+
         uint32_t hash = hashStr(buffer, finalSize);
         vm->regs[destReg] = OBJ_VAL(
-          allocStr(vm, true, buffer, finalSize, hash)
+          allocStr(vm, true, isInterned, buffer, finalSize, hash)
         );
 
         break;

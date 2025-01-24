@@ -50,6 +50,7 @@ static inline bool isObjType(Val val, ObjType type) {
 ObjStr *allocStr(
   NeveVM *vm,
   bool ownsStr,
+  bool isInterned,
   const char *chars,
   uint32_t length,
   uint32_t hash

@@ -24,6 +24,7 @@ static Obj *allocObj(NeveVM *vm, size_t size, ObjType type) {
 ObjStr *allocStr(
   NeveVM *vm,
   bool ownsStr,
+  bool isInterned,
   const char *chars,
   uint32_t length,
   uint32_t hash
@@ -43,7 +44,9 @@ ObjStr *allocStr(
   str->chars = chars;
   str->hash = hash;
 
-  tableSet(&vm->strs, OBJ_VAL(str), NIL_VAL);
+  if (isInterned) {
+    tableSet(&vm->strs, OBJ_VAL(str), NIL_VAL);
+  }
 
   return str;
 }
