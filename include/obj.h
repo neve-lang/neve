@@ -59,6 +59,8 @@ ObjTable *newTable(NeveVM *vm, uint32_t cap);
 
 uint32_t hashStr(const char *key, uint32_t length);
 
+bool objsEq(Obj *a, Obj *b);
+
 void printObj(Val val);
 
 void freeObj(Obj *obj);
