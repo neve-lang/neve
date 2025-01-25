@@ -95,6 +95,10 @@ void printObj(Val val) {
       printf("%.*s", (int)(VAL_AS_STR(val)->length), VAL_AS_CSTR(val));
       break;
 
+    case OBJ_USTR:
+      printf("%.*s", (int)(VAL_AS_USTR(val)->byteLength), VAL_AS_CSTR(val));
+      break;
+
     case OBJ_TABLE:
       printTable(VAL_AS_TABLE(val)->table); 
   }
@@ -110,6 +114,17 @@ void freeObj(Obj *obj) {
       }
 
       FREE(ObjStr, obj);
+      break;
+    }
+
+    case OBJ_USTR: {
+      ObjUStr *str = (ObjUStr *)obj;
+
+      if (str->ownsStr) {
+        FREE_VAR_ARR(str->chars, str->byteLength);
+      }
+
+      FREE(ObjUStr, obj);
       break;
     }
 
@@ -131,6 +146,10 @@ uint32_t objStrLength(Obj *obj) {
       // +2: accommodate for the quotes around it
       return ((ObjStr *)obj)->length + 2;
 
+    case OBJ_USTR:
+      // +2: same as above
+      return ((ObjUStr *)obj)->byteLength + 2;
+
     case OBJ_TABLE:
       return tableStrLength(((ObjTable *)obj)->table);
   }
@@ -147,6 +166,14 @@ uint32_t objAsStr(const char *buffer, const uint32_t size, Obj *obj) {
       ObjStr *str = (ObjStr *)obj;
 
       sprintf((char *)buffer, "\"%.*s\"", str->length, str->chars);
+
+      return size;
+    }
+
+    case OBJ_USTR: {
+      ObjUStr *str = (ObjUStr *)obj;
+
+      sprintf((char *)buffer, "\"%.*s\"", str->byteLength, (char *)str->chars);
 
       return size;
     }

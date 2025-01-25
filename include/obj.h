@@ -7,14 +7,22 @@
 #define OBJ_TYPE(val)     (VAL_AS_OBJ(val)->type)
 
 #define VAL_AS_STR(val)   ((ObjStr *)VAL_AS_OBJ(val))
+#define VAL_AS_USTR(val)  ((ObjUStr *)VAL_AS_OBJ(val))
 #define VAL_AS_CSTR(val)  (((ObjStr *)VAL_AS_OBJ(val))->chars)
 
 #define VAL_AS_TABLE(val) ((ObjTable *)VAL_AS_OBJ(val))
 
 typedef enum {
   OBJ_STR,
+  OBJ_USTR,
   OBJ_TABLE
 } ObjType;
+
+typedef enum {
+  STR_UTF8,
+  STR_UTF16,
+  STR_UTF32
+} Encoding;
 
 struct Obj {
   ObjType type;
@@ -25,10 +33,24 @@ struct Obj {
 struct ObjStr {
   Obj obj; 
 
-  bool ownsStr;
   uint32_t length;
   const char *chars;
 
+  bool ownsStr;
+  uint32_t hash;
+};
+
+// OPTIMIZE: reduce the size of these structs
+struct ObjUStr {
+  Obj obj;
+
+  uint32_t length;
+  uint32_t byteLength;
+  void *chars;
+
+  Encoding encoding;
+
+  bool ownsStr;
   uint32_t hash;
 };
 
