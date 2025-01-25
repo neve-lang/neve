@@ -3,6 +3,7 @@
 
 #include "mem.h"
 #include "obj.h"
+#include "str.h"
 #include "table.h"
 
 #define ALLOC_OBJ(vm, type, objType)                        \
@@ -41,6 +42,48 @@ ObjStr *allocStr(
   ObjStr *str = ALLOC_OBJ(vm, ObjStr, OBJ_STR);
   str->ownsStr = ownsStr;
   str->length = length;
+  str->chars = chars;
+  str->hash = hash;
+
+  if (isInterned) {
+    tableSet(&vm->strs, OBJ_VAL(str), NIL_VAL);
+  }
+
+  return str;
+}
+
+ObjUStr *allocUStr(
+  NeveVM *vm,
+  bool ownsStr,
+  bool isInterned,
+  Encoding encoding,
+  const void *chars,
+  uint32_t length,
+  uint32_t byteLength,
+  uint32_t hash
+) {
+  ObjUStr *interned = tableFindUStr(
+    &vm->strs,
+    chars,
+    encoding,
+    length, 
+    byteLength,
+    hash
+  );
+
+  if (interned != NULL) {
+    if (ownsStr) {
+      FREE_VAR_ARR((void *)chars, byteLength);
+    }
+
+    return interned;
+  }
+
+  ObjUStr *str = ALLOC_OBJ(vm, ObjUStr, OBJ_STR);
+  str->ownsStr = ownsStr;
+  str->length = length;
+  str->byteLength = byteLength;
+  str->encoding = encoding;
   str->chars = chars;
   str->hash = hash;
 
@@ -121,7 +164,7 @@ void freeObj(Obj *obj) {
       ObjUStr *str = (ObjUStr *)obj;
 
       if (str->ownsStr) {
-        FREE_VAR_ARR(str->chars, str->byteLength);
+        FREE_VAR_ARR((void *)str->chars, str->byteLength);
       }
 
       FREE(ObjUStr, obj);

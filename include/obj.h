@@ -1,6 +1,7 @@
 #ifndef OBJ_H
 #define OBJ_H
 
+#include "str.h"
 #include "val.h"
 #include "vm.h"
 
@@ -17,12 +18,6 @@ typedef enum {
   OBJ_USTR,
   OBJ_TABLE
 } ObjType;
-
-typedef enum {
-  STR_UTF8,
-  STR_UTF16,
-  STR_UTF32
-} Encoding;
 
 struct Obj {
   ObjType type;
@@ -46,7 +41,7 @@ struct ObjUStr {
 
   uint32_t length;
   uint32_t byteLength;
-  void *chars;
+  const void *chars;
 
   Encoding encoding;
 
@@ -75,6 +70,17 @@ ObjStr *allocStr(
   bool isInterned,
   const char *chars,
   uint32_t length,
+  uint32_t hash
+);
+
+ObjUStr *allocUStr(
+  NeveVM *vm,
+  bool ownsStr,
+  bool isInterned,
+  Encoding encoding,
+  const void *chars,
+  uint32_t length,
+  uint32_t byteLength,
   uint32_t hash
 );
 
