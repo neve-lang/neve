@@ -79,7 +79,7 @@ ObjUStr *allocUStr(
     return interned;
   }
 
-  ObjUStr *str = ALLOC_OBJ(vm, ObjUStr, OBJ_STR);
+  ObjUStr *str = ALLOC_OBJ(vm, ObjUStr, OBJ_USTR);
   str->ownsStr = ownsStr;
   str->length = length;
   str->byteLength = byteLength;
@@ -139,7 +139,11 @@ void printObj(Val val) {
       break;
 
     case OBJ_USTR:
-      printf("%.*s", (int)(VAL_AS_USTR(val)->byteLength), VAL_AS_CSTR(val));
+      printf(
+        "%.*s", 
+        (int)(VAL_AS_USTR(val)->byteLength), 
+        (char *)VAL_AS_CSTR(val)
+      );
       break;
 
     case OBJ_TABLE:
