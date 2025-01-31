@@ -216,6 +216,9 @@ size_t disasmInstr(Chunk *ch, Val *regs, size_t offset) {
     case OP_CONCAT:
       return manyRegInstr("concat", ch, regs, offset, 3);
 
+    case OP_UCONCAT:
+      return manyRegInstr("uconcat", ch, regs, offset, 3);
+
     case OP_SHL:
       return manyRegInstr("shl", ch, regs, offset, 3);
 

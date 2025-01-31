@@ -6,7 +6,7 @@
 #include "err.h"
 #include "render.h"
 
-// this is basically main.c:readFile() except it’s accomodated to return a
+// this is basically main.c:readFile() except it’s accommodated to return a
 // null-terminated string.
 static char *readSrc(const char *path) {
   FILE *f = fopen(path, "rb");

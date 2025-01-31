@@ -11,6 +11,14 @@
         (
           [String length (4 bytes)] 
           [String contents (variable size)]
+          [Is interned?  (1 byte)]
+        ) |
+        (
+          [String encoding (1 byte)]
+          [String logical length (4 bytes)]
+          [String byte length (4 bytes)]
+          [String contents (variable size)]
+          [Is interned?  (1 byte)]
         ) |
         (
           [Table length (4 bytes)]

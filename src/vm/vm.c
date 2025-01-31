@@ -73,6 +73,42 @@ static void concat(NeveVM *vm) {
   vm->regs[regC] = OBJ_VAL(result);
 }
 
+static void uConcat(NeveVM *vm) {
+  uint8_t regC = READ_BYTE();
+
+  ObjUStr *a = VAL_AS_USTR(vm->regs[READ_BYTE()]);
+  ObjUStr *b = VAL_AS_USTR(vm->regs[READ_BYTE()]);
+
+  const Encoding encoding = a->encoding;
+
+  uint32_t length = a->length + b->length;
+  uint32_t byteLength = a->byteLength + b->byteLength;
+
+  void *chars = ALLOC(char, byteLength + 1);
+
+  memcpy(chars, a->chars, a->byteLength);
+  memcpy((char *)chars + a->byteLength, b->chars, b->byteLength);
+
+  memset((char *)chars + byteLength, '\0', 1);
+
+  uint32_t hash = hashStr(chars, length);
+
+  const bool isInterned = length <= MAX_INTERNED_STR_SIZE; 
+
+  ObjUStr *result = allocUStr(
+    vm,
+    true,
+    isInterned,
+    encoding,
+    chars,
+    length,
+    byteLength,
+    hash
+  );
+
+  vm->regs[regC] = OBJ_VAL(result);
+}
+
 // NOLINTBEGIN
 static Aftermath run(NeveVM *vm) {
 #define BIN_OP(valType, op)                                                   \
@@ -214,6 +250,10 @@ static Aftermath run(NeveVM *vm) {
 
       case OP_CONCAT:
         concat(vm);
+        break;
+
+      case OP_UCONCAT:
+        uConcat(vm);
         break;
 
       case OP_SHL:

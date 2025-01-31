@@ -36,7 +36,9 @@ typedef enum {
   OP_LESS,
   OP_GREATER_EQ,
   OP_LESS_EQ,
+
   OP_CONCAT,
+  OP_UCONCAT,
 
   OP_TABLE_NEW,
   OP_TABLE_SET,
