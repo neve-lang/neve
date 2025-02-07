@@ -316,7 +316,7 @@ static Aftermath run(NeveVM *vm) {
         BIN_OP(BOOL_VAL, <=);
         break;
 
-      case OP_TABLE_NEW: {
+      case OP_TABLENEW: {
         vm->regs[READ_BYTE()] = (
           OBJ_VAL(newTable(vm, 0))
         );
@@ -324,7 +324,7 @@ static Aftermath run(NeveVM *vm) {
         break;
       }
 
-      case OP_TABLE_SET: {
+      case OP_TABLESET: {
         ObjTable *table = VAL_AS_TABLE(vm->regs[READ_BYTE()]);
         Val key = vm->regs[READ_BYTE()];
 
