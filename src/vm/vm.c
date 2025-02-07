@@ -143,14 +143,14 @@ static Aftermath run(NeveVM *vm) {
     const uint8_t instr = READ_BYTE();
 
     switch (instr) {
-      case OP_CONST: {
+      case OP_PUSH: {
         const uint8_t reg = READ_BYTE();
 
         vm->regs[reg] = READ_CONST();
         break;
       }
       
-      case OP_CONST_LONG: {
+      case OP_PUSHLONG: {
         Chunk *ch = vm->ch;
 
 #ifndef DEBUG_EXEC
@@ -190,7 +190,7 @@ static Aftermath run(NeveVM *vm) {
         vm->regs[READ_BYTE()] = NUM_VAL(1);
         break;
 
-      case OP_MINUS_ONE:
+      case OP_MINUSONE:
         vm->regs[READ_BYTE()] = NUM_VAL(-1);
         break;
 
@@ -202,11 +202,11 @@ static Aftermath run(NeveVM *vm) {
         vm->regs[READ_BYTE()] = BOOL_VAL(!VAL_AS_BOOL(vm->regs[READ_BYTE()]));
         break;
 
-      case OP_IS_NIL:
+      case OP_ISNIL:
         vm->regs[READ_BYTE()] = BOOL_VAL(IS_VAL_NIL(vm->regs[READ_BYTE()]));
         break;
 
-      case OP_IS_ZERO:
+      case OP_ISZ:
         vm->regs[READ_BYTE()] = BOOL_VAL(
           VAL_AS_NUM(vm->regs[READ_BYTE()]) == 0
         );
@@ -264,15 +264,15 @@ static Aftermath run(NeveVM *vm) {
         BIT_OP(>>);
         break;
 
-      case OP_BIT_AND:
+      case OP_BAND:
         BIT_OP(&);
         break;
 
-      case OP_BIT_XOR:
+      case OP_XOR:
         BIT_OP(^);
         break;
 
-      case OP_BIT_OR:
+      case OP_BOR:
         BIT_OP(|);
         break;
 
@@ -300,19 +300,19 @@ static Aftermath run(NeveVM *vm) {
         break;
       }
 
-      case OP_GREATER:
+      case OP_GT:
         BIN_OP(BOOL_VAL, >);
         break;
 
-      case OP_LESS:
+      case OP_LT:
         BIN_OP(BOOL_VAL, <);
         break;
 
-      case OP_GREATER_EQ:
+      case OP_GTE:
         BIN_OP(BOOL_VAL, >=);
         break;
 
-      case OP_LESS_EQ:
+      case OP_LTE:
         BIN_OP(BOOL_VAL, <=);
         break;
 
