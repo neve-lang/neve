@@ -261,6 +261,9 @@ size_t disasmInstr(Chunk *ch, Val *regs, size_t offset) {
     case OP_TABLEGET:
       return manyRegInstr("tableget", ch, regs, offset, 3);
 
+    case OP_PRINT:
+      return regInstr("print", ch, regs, offset);
+
     default:
       printf("unknown instr %u\n", instr);
       return offset + 1;

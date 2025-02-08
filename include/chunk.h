@@ -43,6 +43,8 @@ typedef enum {
   OP_TABLENEW,      // tablenew rA: creates a new ObjTable and stores it in rA
   OP_TABLESET,      // tableset rA rB rC: sets the rB key in the rA table to rC
   OP_TABLEGET,      // tableget rA rB rC: retrieves the value associated with the rC key in the rB table and stores it in rA
+                    //
+  OP_PRINT,         // print    rA: (right now) prints the value in rA
 
   OP_RET,           // ret      rA: (right now) prints the value in rA and halts
 } OpCode;

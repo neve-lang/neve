@@ -332,6 +332,11 @@ static Aftermath run(NeveVM *vm) {
         break;
       }
 
+      case OP_PRINT:
+        printVal(vm->regs[READ_BYTE()]);
+        printf("\n");
+        break;
+
       case OP_RET: {
         Val val = vm->regs[READ_BYTE()];
 
