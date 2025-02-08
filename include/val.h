@@ -5,6 +5,7 @@
 
 typedef struct Obj Obj;
 typedef struct ObjStr ObjStr;
+typedef struct ObjUStr ObjUStr;
 typedef struct ObjTable ObjTable;
 
 #define BOOL_VAL(val) ((Val){ VAL_BOOL, {.boolean = (val) } })

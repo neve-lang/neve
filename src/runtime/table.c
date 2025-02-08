@@ -176,6 +176,42 @@ ObjStr *tableFindStr(
   }
 }
 
+ObjUStr *tableFindUStr(
+  Table *table,
+  const void *chars,
+  Encoding encoding,
+  uint32_t length,
+  uint32_t byteLength,
+  uint32_t hash
+) {
+  if (table->next == 0) {
+    return NULL;
+  }
+
+  uint32_t index = hash & (table->cap - 1);
+
+  while (true) {
+    Entry *entry = &table->entries[index];
+
+    if (IS_VAL_EMPTY(entry->key)) {
+      return NULL;
+    }
+
+    ObjUStr *str = VAL_AS_USTR(entry->key);
+
+    if (
+      str->length == length && 
+      str->encoding == encoding &&
+      str->byteLength == byteLength &&
+      memcmp(str->chars, chars, byteLength) == 0
+    ) {
+      return str;
+    }
+
+    index = (index + 1) & (table->cap - 1);
+  }
+}
+
 void printTable(Table *table) {
   if (table->next == 0) {
     printf("[:]");

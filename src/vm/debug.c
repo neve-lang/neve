@@ -162,10 +162,10 @@ size_t disasmInstr(Chunk *ch, Val *regs, size_t offset) {
     case OP_RET:
       return regInstr("ret", ch, regs, offset);
 
-    case OP_CONST_LONG:
-      return longConstInstr("pushl", ch, regs, offset);
+    case OP_PUSHLONG:
+      return longConstInstr("pushlong", ch, regs, offset);
     
-    case OP_CONST:
+    case OP_PUSH:
       return constInstr("push", ch, regs, offset);
 
     case OP_TRUE:
@@ -178,13 +178,13 @@ size_t disasmInstr(Chunk *ch, Val *regs, size_t offset) {
       return regInstr("nil", ch, regs, offset);
 
     case OP_ZERO:
-      return regInstr("pushz", ch, regs, offset);
+      return regInstr("zero", ch, regs, offset);
 
-    case OP_MINUS_ONE:
-      return regInstr("pushm1", ch, regs, offset);
+    case OP_MINUSONE:
+      return regInstr("minusone", ch, regs, offset);
 
     case OP_ONE:
-      return regInstr("push1", ch, regs, offset);
+      return regInstr("one", ch, regs, offset);
     
     case OP_NEG:
       return manyRegInstr("neg", ch, regs, offset, 2);
@@ -192,10 +192,10 @@ size_t disasmInstr(Chunk *ch, Val *regs, size_t offset) {
     case OP_NOT:
       return manyRegInstr("not", ch, regs, offset, 2);
 
-    case OP_IS_NIL:
+    case OP_ISNIL:
       return manyRegInstr("isnil", ch, regs, offset, 2);
 
-    case OP_IS_ZERO:
+    case OP_ISZ:
       return manyRegInstr("isz", ch, regs, offset, 2);
 
     case OP_SHOW:
@@ -216,19 +216,22 @@ size_t disasmInstr(Chunk *ch, Val *regs, size_t offset) {
     case OP_CONCAT:
       return manyRegInstr("concat", ch, regs, offset, 3);
 
+    case OP_UCONCAT:
+      return manyRegInstr("uconcat", ch, regs, offset, 3);
+
     case OP_SHL:
       return manyRegInstr("shl", ch, regs, offset, 3);
 
     case OP_SHR:
       return manyRegInstr("shr", ch, regs, offset, 3);
     
-    case OP_BIT_AND:
+    case OP_BAND:
       return manyRegInstr("band", ch, regs, offset, 3);
 
-    case OP_BIT_XOR:
+    case OP_XOR:
       return manyRegInstr("xor", ch, regs, offset, 3);
 
-    case OP_BIT_OR:
+    case OP_BOR:
       return manyRegInstr("bor", ch, regs, offset, 3);
 
     case OP_EQ:
@@ -237,25 +240,25 @@ size_t disasmInstr(Chunk *ch, Val *regs, size_t offset) {
     case OP_NEQ:
       return manyRegInstr("neq", ch, regs, offset, 3);
     
-    case OP_GREATER:
+    case OP_GT:
       return manyRegInstr("gt", ch, regs, offset, 3);
 
-    case OP_LESS:
+    case OP_LT:
       return manyRegInstr("lt", ch, regs, offset, 3);
 
-    case OP_GREATER_EQ:
+    case OP_GTE:
       return manyRegInstr("gte", ch, regs, offset, 3);
 
-    case OP_LESS_EQ:
+    case OP_LTE:
       return manyRegInstr("lte", ch, regs, offset, 3);
 
-    case OP_TABLE_NEW:
+    case OP_TABLENEW:
       return regInstr("tablenew", ch, regs, offset);
 
-    case OP_TABLE_SET:
+    case OP_TABLESET:
       return manyRegInstr("tableset", ch, regs, offset, 3);
 
-    case OP_TABLE_GET:
+    case OP_TABLEGET:
       return manyRegInstr("tableget", ch, regs, offset, 3);
 
     default:

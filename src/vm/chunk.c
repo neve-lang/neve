@@ -46,10 +46,10 @@ void writeConst(Chunk *ch, Val val, int line) {
   const uint8_t byteLength = 8;
 
   if (index <= UINT8_MAX) {
-    writeChunk(ch, OP_CONST, line); 
+    writeChunk(ch, OP_PUSH, line); 
     writeChunk(ch, (uint8_t)index, line);
   } else {
-    writeChunk(ch, OP_CONST_LONG, line);
+    writeChunk(ch, OP_PUSHLONG, line);
     writeChunk(ch, (uint8_t)(index & UINT8_MAX), line);
     writeChunk(ch, (uint8_t)((index >> byteLength) & UINT8_MAX), line);
     writeChunk(ch, (uint8_t)((index >> byteLength * 2) & UINT8_MAX), line);

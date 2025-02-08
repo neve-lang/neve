@@ -3,6 +3,7 @@
 
 #include "mem.h"
 #include "obj.h"
+#include "str.h"
 #include "table.h"
 
 #define ALLOC_OBJ(vm, type, objType)                        \
@@ -24,6 +25,7 @@ static Obj *allocObj(NeveVM *vm, size_t size, ObjType type) {
 ObjStr *allocStr(
   NeveVM *vm,
   bool ownsStr,
+  bool isInterned,
   const char *chars,
   uint32_t length,
   uint32_t hash
@@ -43,7 +45,51 @@ ObjStr *allocStr(
   str->chars = chars;
   str->hash = hash;
 
-  tableSet(&vm->strs, OBJ_VAL(str), NIL_VAL);
+  if (isInterned) {
+    tableSet(&vm->strs, OBJ_VAL(str), NIL_VAL);
+  }
+
+  return str;
+}
+
+ObjUStr *allocUStr(
+  NeveVM *vm,
+  bool ownsStr,
+  bool isInterned,
+  Encoding encoding,
+  const void *chars,
+  uint32_t length,
+  uint32_t byteLength,
+  uint32_t hash
+) {
+  ObjUStr *interned = tableFindUStr(
+    &vm->strs,
+    chars,
+    encoding,
+    length, 
+    byteLength,
+    hash
+  );
+
+  if (interned != NULL) {
+    if (ownsStr) {
+      FREE_VAR_ARR((void *)chars, byteLength);
+    }
+
+    return interned;
+  }
+
+  ObjUStr *str = ALLOC_OBJ(vm, ObjUStr, OBJ_USTR);
+  str->ownsStr = ownsStr;
+  str->length = length;
+  str->byteLength = byteLength;
+  str->encoding = encoding;
+  str->chars = chars;
+  str->hash = hash;
+
+  if (isInterned) {
+    tableSet(&vm->strs, OBJ_VAL(str), NIL_VAL);
+  }
 
   return str;
 }
@@ -68,10 +114,36 @@ uint32_t hashStr(const char *key, uint32_t length) {
   return hash;
 }
 
+bool objsEq(Obj *a, Obj *b) {
+  if (a == b) {
+    return true;
+  }
+
+  if (a->type != OBJ_STR || b->type != OBJ_STR) {
+    return false;
+  }
+
+  ObjStr *aStr = (ObjStr *)a;
+  ObjStr *bStr = (ObjStr *)b;
+
+  return (
+    aStr->length == bStr->length &&
+    memcmp(aStr->chars, bStr->chars, aStr->length) == 0
+  );
+}
+
 void printObj(Val val) {
   switch (OBJ_TYPE(val)) {
     case OBJ_STR:
       printf("%.*s", (int)(VAL_AS_STR(val)->length), VAL_AS_CSTR(val));
+      break;
+
+    case OBJ_USTR:
+      printf(
+        "%.*s", 
+        (int)(VAL_AS_USTR(val)->byteLength), 
+        (char *)VAL_AS_CSTR(val)
+      );
       break;
 
     case OBJ_TABLE:
@@ -89,6 +161,17 @@ void freeObj(Obj *obj) {
       }
 
       FREE(ObjStr, obj);
+      break;
+    }
+
+    case OBJ_USTR: {
+      ObjUStr *str = (ObjUStr *)obj;
+
+      if (str->ownsStr) {
+        FREE_VAR_ARR((void *)str->chars, str->byteLength);
+      }
+
+      FREE(ObjUStr, obj);
       break;
     }
 
@@ -110,6 +193,10 @@ uint32_t objStrLength(Obj *obj) {
       // +2: accommodate for the quotes around it
       return ((ObjStr *)obj)->length + 2;
 
+    case OBJ_USTR:
+      // +2: same as above
+      return ((ObjUStr *)obj)->byteLength + 2;
+
     case OBJ_TABLE:
       return tableStrLength(((ObjTable *)obj)->table);
   }
@@ -126,6 +213,14 @@ uint32_t objAsStr(const char *buffer, const uint32_t size, Obj *obj) {
       ObjStr *str = (ObjStr *)obj;
 
       sprintf((char *)buffer, "\"%.*s\"", str->length, str->chars);
+
+      return size;
+    }
+
+    case OBJ_USTR: {
+      ObjUStr *str = (ObjUStr *)obj;
+
+      sprintf((char *)buffer, "\"%.*s\"", str->byteLength, (char *)str->chars);
 
       return size;
     }

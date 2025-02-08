@@ -1,6 +1,7 @@
 #ifndef TABLE_H
 #define TABLE_H
 
+#include "str.h"
 #include "val.h"
 
 typedef struct {
@@ -26,6 +27,15 @@ ObjStr *tableFindStr(
   Table *table,
   const char *chars,
   uint32_t length,
+  uint32_t hash
+);
+
+ObjUStr *tableFindUStr(
+  Table *table,
+  const void *chars,
+  Encoding encoding,
+  uint32_t length,
+  uint32_t byteLength,
   uint32_t hash
 );
 

@@ -4,45 +4,47 @@
 #include "val.h"
 
 typedef enum {
-  OP_CONST,
-  OP_CONST_LONG,
+  OP_PUSH,          // push     rA B: loads the constant at index B in the constant pool and stores it in rA
+  OP_PUSHLONG,      // pushlong rA B: loads the constant at index B in the constant pool and stores it in rA
 
-  OP_TRUE,
-  OP_FALSE,
-  OP_NIL,
-  OP_ZERO,
-  OP_ONE,
-  OP_MINUS_ONE,
+  OP_TRUE,          // true     rA: loads true into rA
+  OP_FALSE,         // false    rA: loads false into rA
+  OP_NIL,           // nil      rA: loads nil into rA
+  OP_ZERO,          // zero     rA: loads 0 into rA
+  OP_ONE,           // one      rA: loads 1 into rA
+  OP_MINUSONE,      // minusone rA: loads -1 into rA
 
-  OP_NEG,
-  OP_NOT,
-  OP_IS_NIL,
-  OP_IS_NOT_NIL,
-  OP_IS_ZERO,
-  OP_SHOW,
+  OP_NEG,           // neg      rA rB: negates rB and stores it in rA
+  OP_NOT,           // not      rA rB: flips the boolean value of rB and stores it in rA
+  OP_ISNIL,         // isnil    rA rB: checks if rB is nil and stores the result in rA
+  OP_ISNOTNIL,      // isnotnil rA rB: checks if rB is not nil and stores the result in rA
+  OP_ISZ,           // isz      rA rB: checks if rB is zero and stores the result in rA
+  OP_SHOW,          // show     rA rB: convers rB to a string and stores it in rA
 
-  OP_ADD,
-  OP_SUB,
-  OP_MUL,
-  OP_DIV,
-  OP_SHL,
-  OP_SHR,
-  OP_BIT_AND,
-  OP_BIT_XOR,
-  OP_BIT_OR,
-  OP_NEQ,
-  OP_EQ,
-  OP_GREATER,
-  OP_LESS,
-  OP_GREATER_EQ,
-  OP_LESS_EQ,
-  OP_CONCAT,
+  OP_ADD,           // add      rA rB rC: adds rB to rC and stores the result in rA
+  OP_SUB,           // sub      rA rB rC: subtracts rB to rC and stores the result in rA
+  OP_MUL,           // mul      rA rB rC: multiplies rB by rC and stores the result in rA
+  OP_DIV,           // div      rA rB rC: divides rB by rC and stores the result in rA
+  OP_SHL,           // shl      rA rB rC: shifts left rB by rC bytes and stores the result in rA
+  OP_SHR,           // shr      rA rB rC: shifts right rB by rC bytes and stores the result in rA
+  OP_BAND,          // band     rA rB rC: performs binary AND on rB and rC and stores the result in rA
+  OP_XOR,           // xor      rA rB rC: performs binary XOR on rB and rC and stores the result in rA
+  OP_BOR,           // bor      rA rB rC: performs binary OR on rB and rC and stores the result in rA
+  OP_NEQ,           // neq      rA rB rC: checks if rB and rC aren't equal and stores the result in rA
+  OP_EQ,            // eq       rA rB rC: checks if rB and rC are equal and stores the result in rA
+  OP_GT,            // gt       rA rB rC: checks if rB is greater than rC and stores the result in rA
+  OP_LT,            // lt       rA rB rC: checks if rB is less than rC and stores the result in rA
+  OP_GTE,           // gte      rA rB rC: checks if rB is greater or equal to rC and stores the result in rA
+  OP_LTE,           // lte      rA rB rC: checks if rB is less than or equal to rC and stores the result in rA
 
-  OP_TABLE_NEW,
-  OP_TABLE_SET,
-  OP_TABLE_GET,
+  OP_CONCAT,        // concat   rA rB rC: concatenates rB and rC and stores the result in rA
+  OP_UCONCAT,       // uconcat  rA rB rC: concatenates rB and rC and stores the result in rA
 
-  OP_RET,
+  OP_TABLENEW,      // tablenew rA: creates a new ObjTable and stores it in rA
+  OP_TABLESET,      // tableset rA rB rC: sets the rB key in the rA table to rC
+  OP_TABLEGET,      // tableget rA rB rC: retrieves the value associated with the rC key in the rB table and stores it in rA
+
+  OP_RET,           // ret      rA: (right now) prints the value in rA and halts
 } OpCode;
 
 typedef struct {

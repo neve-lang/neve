@@ -20,6 +20,9 @@
 #define FREE_ARR(type, ptr, oldSize)                        \
   reallocate(ptr, sizeof (type) * (oldSize), 0)
 
+#define FREE_VAR_ARR(ptr, byteSize)                   \
+  reallocate(ptr, byteSize, 0)
+
 void *reallocate(void *ptr, size_t oldSize, size_t newSize);
 void freeObjs(Obj *objs);
 

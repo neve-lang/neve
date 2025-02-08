@@ -67,7 +67,45 @@ static void concat(NeveVM *vm) {
 
   uint32_t hash = hashStr(chars, length);
 
-  ObjStr *result = allocStr(vm, true, chars, length, hash);
+  const bool isInterned = length <= MAX_INTERNED_STR_SIZE;
+
+  ObjStr *result = allocStr(vm, true, isInterned, chars, length, hash);
+  vm->regs[regC] = OBJ_VAL(result);
+}
+
+static void uConcat(NeveVM *vm) {
+  uint8_t regC = READ_BYTE();
+
+  ObjUStr *a = VAL_AS_USTR(vm->regs[READ_BYTE()]);
+  ObjUStr *b = VAL_AS_USTR(vm->regs[READ_BYTE()]);
+
+  const Encoding encoding = a->encoding;
+
+  uint32_t length = a->length + b->length;
+  uint32_t byteLength = a->byteLength + b->byteLength;
+
+  void *chars = ALLOC(char, byteLength + 1);
+
+  memcpy(chars, a->chars, a->byteLength);
+  memcpy((char *)chars + a->byteLength, b->chars, b->byteLength);
+
+  memset((char *)chars + byteLength, '\0', 1);
+
+  uint32_t hash = hashStr(chars, length);
+
+  const bool isInterned = length <= MAX_INTERNED_STR_SIZE; 
+
+  ObjUStr *result = allocUStr(
+    vm,
+    true,
+    isInterned,
+    encoding,
+    chars,
+    length,
+    byteLength,
+    hash
+  );
+
   vm->regs[regC] = OBJ_VAL(result);
 }
 
@@ -105,14 +143,14 @@ static Aftermath run(NeveVM *vm) {
     const uint8_t instr = READ_BYTE();
 
     switch (instr) {
-      case OP_CONST: {
+      case OP_PUSH: {
         const uint8_t reg = READ_BYTE();
 
         vm->regs[reg] = READ_CONST();
         break;
       }
       
-      case OP_CONST_LONG: {
+      case OP_PUSHLONG: {
         Chunk *ch = vm->ch;
 
 #ifndef DEBUG_EXEC
@@ -152,7 +190,7 @@ static Aftermath run(NeveVM *vm) {
         vm->regs[READ_BYTE()] = NUM_VAL(1);
         break;
 
-      case OP_MINUS_ONE:
+      case OP_MINUSONE:
         vm->regs[READ_BYTE()] = NUM_VAL(-1);
         break;
 
@@ -164,11 +202,11 @@ static Aftermath run(NeveVM *vm) {
         vm->regs[READ_BYTE()] = BOOL_VAL(!VAL_AS_BOOL(vm->regs[READ_BYTE()]));
         break;
 
-      case OP_IS_NIL:
+      case OP_ISNIL:
         vm->regs[READ_BYTE()] = BOOL_VAL(IS_VAL_NIL(vm->regs[READ_BYTE()]));
         break;
 
-      case OP_IS_ZERO:
+      case OP_ISZ:
         vm->regs[READ_BYTE()] = BOOL_VAL(
           VAL_AS_NUM(vm->regs[READ_BYTE()]) == 0
         );
@@ -184,9 +222,11 @@ static Aftermath run(NeveVM *vm) {
 
         uint32_t finalSize = valAsStr(buffer, size, val);
 
+        const bool isInterned = finalSize <= MAX_INTERNED_STR_SIZE;
+
         uint32_t hash = hashStr(buffer, finalSize);
         vm->regs[destReg] = OBJ_VAL(
-          allocStr(vm, true, buffer, finalSize, hash)
+          allocStr(vm, true, isInterned, buffer, finalSize, hash)
         );
 
         break;
@@ -212,6 +252,10 @@ static Aftermath run(NeveVM *vm) {
         concat(vm);
         break;
 
+      case OP_UCONCAT:
+        uConcat(vm);
+        break;
+
       case OP_SHL:
         BIT_OP(<<);
         break;
@@ -220,15 +264,15 @@ static Aftermath run(NeveVM *vm) {
         BIT_OP(>>);
         break;
 
-      case OP_BIT_AND:
+      case OP_BAND:
         BIT_OP(&);
         break;
 
-      case OP_BIT_XOR:
+      case OP_XOR:
         BIT_OP(^);
         break;
 
-      case OP_BIT_OR:
+      case OP_BOR:
         BIT_OP(|);
         break;
 
@@ -256,23 +300,23 @@ static Aftermath run(NeveVM *vm) {
         break;
       }
 
-      case OP_GREATER:
+      case OP_GT:
         BIN_OP(BOOL_VAL, >);
         break;
 
-      case OP_LESS:
+      case OP_LT:
         BIN_OP(BOOL_VAL, <);
         break;
 
-      case OP_GREATER_EQ:
+      case OP_GTE:
         BIN_OP(BOOL_VAL, >=);
         break;
 
-      case OP_LESS_EQ:
+      case OP_LTE:
         BIN_OP(BOOL_VAL, <=);
         break;
 
-      case OP_TABLE_NEW: {
+      case OP_TABLENEW: {
         vm->regs[READ_BYTE()] = (
           OBJ_VAL(newTable(vm, 0))
         );
@@ -280,7 +324,7 @@ static Aftermath run(NeveVM *vm) {
         break;
       }
 
-      case OP_TABLE_SET: {
+      case OP_TABLESET: {
         ObjTable *table = VAL_AS_TABLE(vm->regs[READ_BYTE()]);
         Val key = vm->regs[READ_BYTE()];
 

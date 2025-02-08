@@ -76,7 +76,7 @@ bool valsEq(Val a, Val b) {
       return VAL_AS_NUM(a) == VAL_AS_NUM(b);
 
     case VAL_OBJ:
-      return VAL_AS_OBJ(a) == VAL_AS_OBJ(b);
+      return objsEq(VAL_AS_OBJ(a), VAL_AS_OBJ(b));
 
     case VAL_EMPTY:
       return true;
